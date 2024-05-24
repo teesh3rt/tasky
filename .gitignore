@@ -1,0 +1,4 @@
+.env
+venv
+tasky.db
+__pycache__
