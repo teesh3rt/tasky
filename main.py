@@ -72,7 +72,7 @@ async def add(ctx: nextcord.Interaction, id: int):
     )
 
     logger.info(f"{ctx.user.display_name} deleted a task: {task.task}")
-    
+
     embed.set_footer(text=f"Task ID: {task.id}")
     embed.set_thumbnail(url=ctx.user.display_avatar)
     task.delete_instance()
@@ -114,7 +114,7 @@ async def mark(ctx: nextcord.Interaction, id: int):
 
 @bot.event
 async def on_ready():
-    logger.info(f"{bot.user.display_avatar} up!")
+    logger.info(f"{bot.user.display_name} up!")
 
 TOKEN = os.getenv("TOKEN")
 bot.run(TOKEN)
