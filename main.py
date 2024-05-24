@@ -1,7 +1,7 @@
-from nextcord.ext import commands
+from guilded.ext import commands
 from db import *
 from loguru import logger
-import nextcord
+import guilded as nextcord
 import os
 import dotenv
 
@@ -9,13 +9,11 @@ dotenv.load_dotenv()
 
 logger.add("tasky.log")
 
-intents = nextcord.Intents.default()
-intents.message_content = True
-bot = commands.Bot(command_prefix="!", intents=intents)
+bot = commands.Bot(command_prefix="!")
 
-@bot.slash_command(name="list", description="List your tasks")
-async def list(ctx: nextcord.Interaction):
-    tasks = Task.select().where(Task.user == ctx.user.id)
+@bot.command(name="list")
+async def list(ctx: commands.Context):
+    tasks = Task.select().where(Task.user == ctx.author.id)
     desc = ""
 
     for task in tasks:
@@ -27,18 +25,18 @@ async def list(ctx: nextcord.Interaction):
         desc += f"{task.task} ({task.id})\n"
 
     embed = nextcord.Embed(
-        title=f"{ctx.user.display_name}'s tasks",
+        title=f"{ctx.author.display_name}'s tasks",
         description=desc,
         color=nextcord.Color.green()
     )
 
-    embed.set_thumbnail(url=ctx.user.display_avatar)
+    embed.set_thumbnail(url=ctx.author.display_avatar)
 
     await ctx.send(embed=embed)
 
-@bot.slash_command(name="add", description="Add a task")
-async def add(ctx: nextcord.Interaction, task: str):
-    user = ctx.user.id
+@bot.command(name="add")
+async def add(ctx: commands.Context, *, task: str):
+    user = ctx.author.id
 
     task = Task.create(task=task, user=user)
 
@@ -48,16 +46,16 @@ async def add(ctx: nextcord.Interaction, task: str):
         color=nextcord.Color.green()
     )
 
-    logger.info(f"{ctx.user.display_name} added a task: {task.task}")
+    logger.info(f"{ctx.author.display_name} added a task: {task.task}")
 
     embed.set_footer(text=f"Task ID: {task.id}")
-    embed.set_thumbnail(url=ctx.user.display_avatar)
+    embed.set_thumbnail(url=ctx.author.display_avatar)
 
     await ctx.send(embed=embed)
 
-@bot.slash_command(name="delete", description="Delete a task")
-async def delete(ctx: nextcord.Interaction, id: int):
-    task = Task.select().where(Task.user == ctx.user.id, Task.id == id)
+@bot.command(name="delete", description="Delete a task")
+async def delete(ctx: commands.Context, id: int):
+    task = Task.select().where(Task.user == ctx.author.id, Task.id == id)
 
     if task:
         task = task[0]
@@ -71,17 +69,17 @@ async def delete(ctx: nextcord.Interaction, id: int):
         color=nextcord.Color.red()
     )
 
-    logger.info(f"{ctx.user.display_name} deleted a task: {task.task}")
+    logger.info(f"{ctx.author.display_name} deleted a task: {task.task}")
 
     embed.set_footer(text=f"Task ID: {task.id}")
-    embed.set_thumbnail(url=ctx.user.display_avatar)
+    embed.set_thumbnail(url=ctx.author.display_avatar)
     task.delete_instance()
 
     await ctx.send(embed=embed)
 
-@bot.slash_command(name="mark", description="Mark or unmark a task")
-async def mark(ctx: nextcord.Interaction, id: int):
-    task = Task.select().where(Task.id == id, Task.user == ctx.user.id)
+@bot.command(name="mark", description="Mark or unmark a task")
+async def mark(ctx: commands.Context, id: int):
+    task = Task.select().where(Task.id == id, Task.user == ctx.author.id)
 
     if task:
         task = task[0]
@@ -98,17 +96,17 @@ async def mark(ctx: nextcord.Interaction, id: int):
             description=task.task,
             color=nextcord.Color.green()
         )
-        logger.info(f"{ctx.user.display_name} marked a task: {task.task}")
+        logger.info(f"{ctx.author.display_name} marked a task: {task.task}")
     else:
         embed = nextcord.Embed(
             title="Task unmarked!",
             description=task.task,
             color=nextcord.Color.red()
         )
-        logger.info(f"{ctx.user.display_name} unmarked a task: {task.task}")
+        logger.info(f"{ctx.author.display_name} unmarked a task: {task.task}")
 
     embed.set_footer(text=f"Task ID: {task.id}")
-    embed.set_thumbnail(url=ctx.user.display_avatar)
+    embed.set_thumbnail(url=ctx.author.display_avatar)
 
     await ctx.send(embed=embed)
 
@@ -117,4 +115,5 @@ async def on_ready():
     logger.info(f"{bot.user.display_name} up!")
 
 TOKEN = os.getenv("TOKEN")
+print(TOKEN)
 bot.run(TOKEN)
