@@ -56,7 +56,7 @@ async def add(ctx: nextcord.Interaction, task: str):
     await ctx.send(embed=embed)
 
 @bot.slash_command(name="delete", description="Delete a task")
-async def add(ctx: nextcord.Interaction, id: int):
+async def delete(ctx: nextcord.Interaction, id: int):
     task = Task.select().where(Task.user == ctx.user.id, Task.id == id)
 
     if task:
