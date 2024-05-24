@@ -115,5 +115,4 @@ async def on_ready():
     logger.info(f"{bot.user.display_name} up!")
 
 TOKEN = os.getenv("TOKEN")
-print(TOKEN)
 bot.run(TOKEN)
