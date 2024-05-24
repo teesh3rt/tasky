@@ -1,12 +1,17 @@
 from nextcord.ext import commands
 from db import *
+from loguru import logger
 import nextcord
 import os
 import dotenv
 
 dotenv.load_dotenv()
 
-bot = commands.Bot(command_prefix="!")
+logger.add("tasky.log")
+
+intents = nextcord.Intents.default()
+intents.message_content = True
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.slash_command(name="list", description="List your tasks")
 async def list(ctx: nextcord.Interaction):
@@ -43,6 +48,8 @@ async def add(ctx: nextcord.Interaction, task: str):
         color=nextcord.Color.green()
     )
 
+    logger.info(f"{ctx.user.display_name} added a task: {task.task}")
+
     embed.set_footer(text=f"Task ID: {task.id}")
     embed.set_thumbnail(url=ctx.user.display_avatar)
 
@@ -64,6 +71,8 @@ async def add(ctx: nextcord.Interaction, id: int):
         color=nextcord.Color.red()
     )
 
+    logger.info(f"{ctx.user.display_name} deleted a task: {task.task}")
+    
     embed.set_footer(text=f"Task ID: {task.id}")
     embed.set_thumbnail(url=ctx.user.display_avatar)
     task.delete_instance()
@@ -89,17 +98,23 @@ async def mark(ctx: nextcord.Interaction, id: int):
             description=task.task,
             color=nextcord.Color.green()
         )
+        logger.info(f"{ctx.user.display_name} marked a task: {task.task}")
     else:
         embed = nextcord.Embed(
             title="Task unmarked!",
             description=task.task,
             color=nextcord.Color.red()
         )
+        logger.info(f"{ctx.user.display_name} unmarked a task: {task.task}")
 
     embed.set_footer(text=f"Task ID: {task.id}")
     embed.set_thumbnail(url=ctx.user.display_avatar)
 
     await ctx.send(embed=embed)
+
+@bot.event
+async def on_ready():
+    logger.info(f"{bot.user.display_avatar} up!")
 
 TOKEN = os.getenv("TOKEN")
 bot.run(TOKEN)

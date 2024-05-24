@@ -1,4 +1,5 @@
 .env
 venv
 tasky.db
+tasky.log
 __pycache__
